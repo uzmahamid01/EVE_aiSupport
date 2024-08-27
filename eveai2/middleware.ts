@@ -1,6 +1,7 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
+// Define public routes
 const publicRoutes = [
   "/",
   "/landing",
@@ -10,14 +11,17 @@ const publicRoutes = [
   "/sign-up(.*)",
 ];
 
+// Middleware function
 export default clerkMiddleware((auth, request) => {
   const url = new URL(request.url);
-  
+
+  // Allow access to public routes
   if (publicRoutes.some(route => url.pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  if (!auth.userId && !auth.isPublicRoute) {
+  // Redirect to sign-in if not authenticated
+  if (!auth) { // Check if the method or property exists
     const signInUrl = new URL('/sign-in', request.url);
     signInUrl.searchParams.set('redirect_url', url.pathname);
     return NextResponse.redirect(signInUrl);
@@ -26,6 +30,7 @@ export default clerkMiddleware((auth, request) => {
   return NextResponse.next();
 });
 
+// Configuration for matcher
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
